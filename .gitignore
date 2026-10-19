@@ -1,0 +1,41 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies (not used in this project, but just in case)
+node_modules/
+
+# Secrets (keep your group key out of the repo)
+.env
+.env.*
+secrets.js
+config.local.js
+
+# Zip files (example projects, deliveries)
+*.zip
+
+# Arduino / ESP32 (task 19)
+build/
+*.bin
+*.elf
+*.hex
+*.map
+.pio/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
