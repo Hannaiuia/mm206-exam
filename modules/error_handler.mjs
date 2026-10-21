@@ -1,0 +1,1 @@
+//this module handles errors, e.g., shows a dialog with information to the user.
