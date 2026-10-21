@@ -1,0 +1,1 @@
+//this module handles info-messages to the user, e.g., shows a dialog when you have logged in successfully, added an order etc
