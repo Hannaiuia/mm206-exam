@@ -15,6 +15,7 @@ const viewContainer = document.getElementById("viewContainer");
 const btnHome = document.getElementById(`btnHome`); 
 const btnSearch = document.getElementById(`btnSearch`); 
 let myInput = document.getElementById("myInput"); 
+let wrongSearch= document.getElementById("wrongSearch"); 
 
 //show categories at startup 
 const categories = await getCategories(); 
@@ -34,11 +35,20 @@ btnSearch.addEventListener(`click`, async function(evt){
     let finalInput = searchInput.toLowerCase(); 
     const products = await searchProducts(finalInput); 
     prodView.refresh(products); 
-    navigateTo("prod-view"); 
-    myInput.value = (""); 
+    navigateTo("prod-view");
+    wrongSearch.innerHTML = (""); 
+
+    if(products.length == 0){
+        wrongSearch.innerHTML = "Your search did not match any products"; 
+    } else{
+        //prodView.refresh(products);     
+    }
+    //myInput.value = (""); 
 }); 
 //------------------------------------------------
 btnHome.addEventListener(`click`, function(evt){
+    wrongSearch.innerHTML = (""); 
+    myInput.value = (""); 
     navigateTo("cat-view"); 
 }); 
   
