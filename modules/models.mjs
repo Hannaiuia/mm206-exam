@@ -42,12 +42,19 @@ export class ProductArrayModel{
     convertObj(dataObj){
         return {
             id:     dataObj.id, 
-            catId:  dataObj.category_id, 
+            catId:  dataObj.category_id,
+            catName:dataObj.category_name,
             name:   dataObj.chocoName, 
             descr:  dataObj.descr, 
-            price:  dataObj.price
-
+            price:  dataObj.price, 
+            thumb:  dataObj.thumb, 
+            image:  dataObj.image,
+            stock:  dataObj.stock,
+            sale:   dataObj.discount,
+            delivery:dataObj.expected_shipped
             //will have to add more properties if needed
         }
     }
 }
+
+//==============================================
