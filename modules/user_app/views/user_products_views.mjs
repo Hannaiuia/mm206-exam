@@ -12,8 +12,6 @@ export class CategoryView extends HTMLElement{
         this.shadow.innerHTML = "";
 
         for(let value of data){
-            //console.log("Category received by view:", value);
-            //console.log("Category name:", value.catName);
 
             const div = document.createElement("div"); 
             div.innerHTML = `
@@ -27,7 +25,6 @@ export class CategoryView extends HTMLElement{
                 catEvt.categoryData = value; 
                 this.shadow.dispatchEvent(catEvt); 
             }); 
-            //console.log("Rendered HTML:", this.shadow.innerHTML);
         }
     }
 }
@@ -81,34 +78,19 @@ export class DetailView extends HTMLElement{
 
     refresh(data){
         if(!data) {return}
-
         this.shadow.innerHTML = ""; 
-        let sale = "";  
-        let showSale = ""; 
-        let delivery = "";
-        let deliveryMsg = ""; 
-
-        if (data.sale > 0){
-            sale = data.sale; 
-            showSale = "Product is on " + sale + " % "; 
-        } 
-
-        if(data.stock < 1){
-            delivery = new Date(data.delivery).toLocaleDateString("en-GB", { day: "numeric", month: "numeric", year: "numeric"})
-            deliveryMsg = "The product is not in stock at the moment. The item will therfor arrive at " + delivery ;
-        }
         
         this.shadowRoot.innerHTML = `
             <h2>${data.name}</h2>
-            <h2> ${showSale} </h2>
+            <h2> ${this.formatSale(data)} </h2>
             <img src = "https://sukkergris.onrender.com/images/GFTPOE21/large/${data.image}">
             <br>
+            <h3> ${this.formatStock(data)} </h3>
             <p> Category: ${data.catName} </p>
-            <p> Stock: ${data.stock} </p>
-            <h3> ${deliveryMsg} </h3>
             <p> ${data.descr} </p>
-            <p>kr ${data.price}-</p>
-            <p> Number of ratings 1-5: </p>
+            <br>
+            <h3> ${this.formatPrice(data)}</h3>
+            <p> ${this.formatRating(data)} </p>
             `; 
 
         const backBtn = document.createElement("button");
@@ -130,8 +112,41 @@ export class DetailView extends HTMLElement{
             console.log("added product"); 
         })
     }
- }
 
+    //---------------format methods-------------------------------------
+    formatPrice(data){
+        if (data.sale > 0){
+            let newPrice = ""; 
+            newPrice = Math.round(data.price * (1- (data.sale/100))); 
+            return "Original price:" + data.price + ",-kr New price: " + newPrice + ",-kr"; 
+        }else{
+            return "Price: " + data.price +  ",-kr"; 
+        }}
+
+    formatSale(data){
+        if (data.sale > 0){
+            return "The product is on " + data.sale + " % sale "; 
+        }else{
+            return ""; 
+        }
+    }
+
+    formatStock(data){
+        if(data.stock < 1){
+            let delivery = new Date(data.delivery).toLocaleDateString("en-GB", { day: "numeric", month: "numeric", year: "numeric"})
+            let deliveryMsg = "The product is not in stock at the moment. The item will therfor arrive at " + delivery ;
+            return deliveryMsg; 
+        }else{
+            return "Stock: " + data.stock; 
+        }}
+
+    formatRating(data){
+        if(data.rating == null){
+            return "Note! The item has not been rated yet! "; 
+        }else{
+            return "Rating: " + data.rating; 
+        }}
+}
 
 //================================================
 customElements.define("cat-view", CategoryView); 
