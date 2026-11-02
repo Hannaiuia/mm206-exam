@@ -2,7 +2,7 @@
 
 //import
 import { errorHandler} from "./error_handler.mjs"; 
-import { CategoryArrayModel, ProductArrayModel } from "./models.mjs";
+import { CategoryArrayModel, ProductArrayModel} from "./models.mjs";
 import { sendRequest } from "./utils.mjs";
 
 const groupkey = "YNWWOG84"; 
@@ -53,9 +53,27 @@ export async function getProductsByCategory(catId) {
 
         const dataFromServer = await sendRequest(url); 
         
-        console.log("Raw product data:", dataFromServer);
+        //console.log("Raw product data:", dataFromServer);
 
         // convert from server-data to app model - data
+        const model = new ProductArrayModel(dataFromServer); 
+        return model.data; 
+
+    } catch(error) {
+        errorHandler(error); 
+        return []; 
+    }
+}
+
+//-------------------------------------------------
+export async function getIndividualProduct(id){
+    const url = `https://sukkergris.onrender.com/webshop/chocolates?id=${id}&key=${groupkey}`
+
+    try {
+        const dataFromServer = await sendRequest(url);
+        console.log("Data from server:", dataFromServer); 
+
+        // convert from server.data to app model-data
         const model = new ProductArrayModel(dataFromServer); 
         return model.data; 
 
