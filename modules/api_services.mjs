@@ -41,6 +41,7 @@ export async function getAllProducts() {
 
        } catch (error){
         errorHandler(error); 
+        const errorText = errorHandler(error);
         return []; 
     }
 }
@@ -79,5 +80,46 @@ export async function searchProducts(search){
     } catch(error){
         errorHandler(error); 
         return []; 
+    }
+}
+
+//--------------------------------------------------
+
+export async function adminLogin(Authorization) {
+    const url = `https://sukkergris.onrender.com/users/adminlogin?key=${groupkey}`;
+    const header = {Authorization};
+
+    try{
+        const dataForAdmin = await sendRequest(url, {
+            method: "POST",
+            headers: header
+        });
+        console.log(dataForAdmin)
+        return dataForAdmin;
+
+    } catch(error){
+        errorHandler(error);
+    }
+    
+}
+
+//--------------------------------------------------
+
+export async function adminAddProd(Authorization) {
+    const url = `https://sukkergris.onrender.com/webshop/chocolates?key=${groupkey}`;
+    const header = {Authorization};
+
+    const formData = new FormData()
+
+    try{
+        formData.append(name,name)
+        const dataAddProd = await sendRequest(url, {
+            method: "POST",
+            headers: header
+        });
+        return dataAddProd;
+
+    } catch(error){
+        errorHandler(error);
     }
 }

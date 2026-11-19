@@ -1,20 +1,22 @@
-import {getCategories, getAllProducts, getProductsByCategory,searchProducts } from "../../../mm206-exam-raggen/modules/api_services.mjs"
-import { CategoryView, ProductForm, ProductView } from "../../../mm206-exam-raggen/modules/admin_app/views/admin_product_views.mjs";
-import { adminLoginView } from "../../../mm206-exam-raggen/modules/admin_app/views/admin_login_view.mjs";
-import { adminMenuView } from "../../../mm206-exam-raggen/modules/admin_app/views/admin_menu_view.mjs";
+import {getCategories, getAllProducts, getProductsByCategory,searchProducts, adminLogin } from "../api_services.mjs";
+import {CategoryView, ProductForm, ProductView } from "./views/admin_product_views.mjs";
+import {adminLoginView } from "./views/admin_login_view.mjs";
+import {adminMenuView } from "./views/admin_menu_view.mjs";
+import { errorHandler } from "../error_handler.mjs";
+
+//------------------------------------------------
 
 const viewContainer = document.getElementById("viewContainer"); 
-
-
 const catView = new CategoryView();
 const prodView = new ProductView();
 const prodForm = new ProductForm();
 const MenuView = new adminMenuView();
 const loginView = new adminLoginView();
+//const error = new errorHandler();
 
 loginView.refresh();
 
-
+//------------------------------------------------
 
 const viewMap = {
     "catview": catView,
@@ -24,6 +26,8 @@ const viewMap = {
     "Menuview": MenuView
     
 }
+
+//------------------------------------------------
 
 function navigateTo(viewName, push){
     //push se excerise 3
@@ -36,27 +40,54 @@ function navigateTo(viewName, push){
 
 }
 
+//------------------------------------------------
 
-loginView.addEventListener("adminMenuView", async function(evt) {
-    console.log("okgigj");
-    navigateTo("Menuview", true);
-})
+function createBasicAuthString(username, password) {
+let combinedStr = username + ":" + password;
+let b64Str = btoa(combinedStr);
+return "basic " + b64Str; //return the basic authentication string
+}
+
+//------------------------------------------------
 
 MenuView.addEventListener("adminProdView", async function(evt) {
-    console.log("to");
+    console.log("catview");
     const categories = await getCategories();
     catView.refresh(categories)
     navigateTo("catview", true);
 })
 
-
+//------------------------------------------------
 
 catView.addEventListener('categoryselect', async function(evt) {
     const categoryId = evt.categoryData.id;
     const products = await getProductsByCategory(categoryId);
-    console.log("lalal")
+    console.log("cat product view")
     prodView.refresh(products);
 })
+
+//------------------------------------------------
+
+let token = "";
+
+//------------------------------------------------
+loginView.addEventListener("prodAdminView", async (evt) => {
+    console.log("login button click")
+
+    let loginAttemt = createBasicAuthString(evt.detail.username, evt.detail.password)
+    const dataForAdmin = await adminLogin(loginAttemt)
+
+    if(dataForAdmin.msg === "administrator login OK"){
+        console.log("Succses login")
+
+        token = dataForAdmin.logindata.token;
+        navigateTo("Menuview")
+    }else{
+        loginView.errorMessage();
+    }
+})
+
+//------------------------------------------------
 
 window.addEventListener("popstate", function(evt){
     if(evt.state){
@@ -64,12 +95,7 @@ window.addEventListener("popstate", function(evt){
     }
 })
 
-/*function createBasicAuthString(username, password) {
-let combinedStr = username + ":" + password;
-let b64Str = btoa(combinedStr);
-return "basic " + b64Str; //return the basic authentication string
-}
-*/
+//------------------------------------------------
 
 navigateTo("adminLogin")
 

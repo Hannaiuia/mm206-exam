@@ -1,19 +1,23 @@
-
-//===============================================
 export class CategoryView extends HTMLElement {
 
     //-----------------------------
+
     constructor() {
         super();
         this.shadow = this.attachShadow({mode: "open"});
     }
 
     //-----------------------------
-    refresh(data) {       
+
+    refresh(data) { 
+        
+        const btnChangeProduct = document.createElement("button");
+        btnChangeProduct.innerHTML = "Edit products"
 
         if (!data) {return} //if an error is catched in api_service               
         
         this.shadow.innerHTML = "";
+        this.shadow.appendChild(btnChangeProduct);
         for (let value of data) {            
             const div = document.createElement("div");
             div.innerHTML = `
@@ -32,15 +36,18 @@ export class CategoryView extends HTMLElement {
 }
 
 //===============================================
+
 export class ProductView extends HTMLElement {
 
     //-----------------------------
+
     constructor() {
         super();
         this.shadow = this.attachShadow({mode: "open"});
     }
 
     //-----------------------------
+
     refresh(data) {
 
         if (!data) {return} //if an error is catched in api_service         
@@ -59,13 +66,18 @@ export class ProductView extends HTMLElement {
 }
 
 //===============================================
+
 export class ProductForm extends HTMLElement {
 
     //-----------------------------
+
     constructor() {
         super();
 
         this.shadow = this.attachShadow({mode: "open"});
+
+        //-----------------------------
+
         this.shadow.innerHTML = `
             <h2>Add product</h2>
             <hr>
@@ -80,8 +92,11 @@ export class ProductForm extends HTMLElement {
                 <input type="submit" value="Add dummy product">
             </form>
         `;
+
         const theForm = this.shadow.querySelector("#theForm");
         
+        //-----------------------------
+
         theForm.addEventListener('submit', evt => {
             evt.preventDefault();
             const addProdEvent = new CustomEvent("addproduct", {composed: true, bubbles: true});
@@ -92,6 +107,7 @@ export class ProductForm extends HTMLElement {
 }    
 
 //===============================================
+
 customElements.define("category-view", CategoryView);
 customElements.define("product-view", ProductView);
 customElements.define("product-form", ProductForm);
