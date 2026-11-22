@@ -1,18 +1,22 @@
-import {getCategories, getAllProducts, getProductsByCategory,searchProducts, getIndividualProduct } from "../api_services.mjs"
+import {getCategories, getAllProducts, getProductsByCategory,searchProducts, getIndividualProduct,getShippingMethods, sendOrder } from "../api_services.mjs"
 //import { CategoryArrayModel } from "../models.mjs";
-import { CategoryView, ListView, DetailView, CartView  } from "./views/user_products_views.mjs";
+import { CategoryView, ListView, DetailView, CartView, CheckoutView, ConfirmationView } from "./views/user_products_views.mjs";
 
 //import data
 const catView = new CategoryView(); 
 const prodView = new ListView(); 
 const detailView = new DetailView(); 
 const cartView = new CartView(); 
+const checkoutView = new CheckoutView(); 
+const confirmationView = new ConfirmationView(); 
 
 const viewMap = {
     "cat-view": catView, 
     "prod-view": prodView,
     "detail-view": detailView, 
-    "cart-view": cartView
+    "cart-view": cartView,
+    "checkout-view": checkoutView, 
+    "confirmation-view":confirmationView
 }
 
 const viewContainer = document.getElementById("viewContainer"); 
@@ -110,6 +114,21 @@ detailView.addEventListener(`buyProdClick`, function(evt){
     console.log(localStorage.getItem("productsInCart")); 
 }); 
 
+//------------------------------------------------------------
+cartView.addEventListener(`checkoutClick`, async function(evt){
+    let cart =  JSON.parse(localStorage.getItem("productsInCart")) || []; 
+    
+    if (cart.length === 0){
+        console.log("A product has to be added for checkout"); 
+    }else{
+        const shippingMethods =  await getShippingMethods();
+        const cartTotal = cartView.calculateTotalPrice(cart); 
+
+        checkoutView.refresh(shippingMethods, cartTotal); 
+        navigateTo("checkout-view", true); 
+    }
+}); 
+
 //--------------------------------------------------------------
 cartView.addEventListener(`deleteProdClick`, function(evt){
     const productData = evt.productData; 
@@ -155,6 +174,16 @@ cartView.addEventListener(`plusQuantityClick`, function(evt){
     localStorage.setItem(`productsInCart`, JSON.stringify(cart)); 
     cartView.refresh(cart); 
 })
+
+//-----------------------------------------------------------
+checkoutView.addEventListener("placeOrderClick", async function(evt){
+    const order = evt.productData; 
+    const response = await sendOrder(order); 
+
+    console.log(response); 
+    confirmationView.refresh(response, order);  
+    navigateTo("confirmation-view", true)
+}); 
 
 //------------------------------------------
 prodView.addEventListener(`backclick`, function(){

@@ -46,6 +46,7 @@ export class ListView extends HTMLElement{
             div.innerHTML = `
                 <h2>${value.name}</h2> 
                 <img src = "https://sukkergris.onrender.com/images/GFTPOE21/small/${value.thumb}">
+                <p> ${value.shortDescr} </p>
                 <br>
                 <p>kr ${value.price}-</p><hr>
             `;
@@ -235,7 +236,7 @@ export class CartView extends HTMLElement{
         checkOutBtn.innerText = "Checkout"; 
 
         checkOutBtn.addEventListener(`click`, evt =>{
-            const checkOut = new CustomEvent("checkOutClick", {composed: true, bubbles: true})
+            const checkOut = new CustomEvent("checkoutClick", {composed: true, bubbles: true})
             checkOut.productData = shoppingCart; 
             console.log("checking out"); 
 
@@ -326,10 +327,137 @@ export class CartView extends HTMLElement{
         return totalPrice; 
     }
 }
-// export class checkOutView
+//==========================================================
+export class CheckoutView extends HTMLElement{
+    constructor(){
+        super(); 
+        this.shadow = this.attachShadow({mode: "open"});
+    }
+
+    refresh(data, cartTotal){
+    if(!data) {return}
+    this.shadow.innerHTML = ""; 
+    
+    const form = document.createElement("form"); 
+    
+    form.innerHTML = `
+        <h1>CheckOut Page</h1>
+
+            <label for="customerName">Full name: </label>
+            <input type="text" id="customerName" required><br>
+
+            <label for="customerEmail">Email: </label>
+            <input type="email" id="customerEmail" required><br>
+
+            <label for="customerPhone">Phone: </label>
+            <input type="tel" id="customerPhone"><br>
+
+            <label for="customerStreet">Street: </label>
+            <input type="text" id="customerStreet" required><br>
+
+            <label for="customerCity">City: </label>
+            <input type="text" id="customerCity" required><br>
+
+            <label for="customerZip">Zip Code: </label>
+            <input type="number" id="customerZip" required><br>
+
+            <label for="customerCountry">Country: </label>
+            <input type="text" id="customerCountry" required><br>
+
+            <label for="shippingTypes">Shipping type: </label>
+            <select id="shippingTypes" required>
+                <option value="">Choose shipping method </option>
+            </select><br>
+
+            <input type="submit" value="Place order">
+            <h2 id="orderTotal"></h2>
+            `;
+        this.placeOrderButton(form);
+        this.shadow.appendChild(form); 
+    
+        const shippingTypes = this.shadowRoot.querySelector("#shippingTypes"); 
+        const orderTotal = this.shadow.querySelector("#orderTotal"); 
+
+        for (let value of data){
+            const option = document.createElement("option"); 
+
+            option.value = value.id;
+            option.innerText = `${value.type} - ${value.price} kr`;
+
+            shippingTypes.appendChild(option)
+       
+        } 
+        
+        this.calculateTotalWithShipping(shippingTypes, cartTotal, data, orderTotal)
+       
+    } 
+
+    //----------------------------------------------------------------------------- 
+    placeOrderButton(form){
+        form.addEventListener("submit", evt =>{
+            evt.preventDefault();
+
+            let shipping_id = this.shadow.querySelector("#shippingTypes").value; 
+            let name = this.shadow.querySelector("#customerName").value; 
+            let phone = this.shadow.querySelector("#customerPhone").value; 
+            let email = this.shadow.querySelector("#customerEmail").value; 
+
+            let street = this.shadow.querySelector("#customerStreet").value; 
+            let city  = this.shadow.querySelector("#customerCity").value; 
+            let zipCode = this.shadow.querySelector("#customerZip").value; 
+            let country = this.shadow.querySelector("#customerCountry").value; 
+
+            let content = JSON.parse(localStorage.getItem("productsInCart"));
+
+            let order = {shipping_id :shipping_id, name: name, email:email, phone:phone , city:city, street:street, zipCode:zipCode, country:country, content: content}
+
+            console.log("My order", order); 
+
+            const placeOrder = new CustomEvent("placeOrderClick", {composed: true, bubbles: true});
+            placeOrder.productData = order; 
+
+            this.dispatchEvent(placeOrder);
+            console.log("your order has been placed");
+        });
+    }  
+
+    //-------------------------------------------------------------------------------
+    calculateTotalWithShipping(shippingTypes, cartTotal, data, orderTotal){
+        shippingTypes.addEventListener("change", evt => {
+
+        let selectedIndex = shippingTypes.selectedIndex;
+        let shippingPrice = data[selectedIndex - 1].price;
+
+        let totalWithShipping = cartTotal + Number(shippingPrice); 
+        orderTotal.textContent = `Total Price with shipping ${totalWithShipping}  kr`; 
+        }); 
+    }    
+} 
+//=====================================================
+export class ConfirmationView extends HTMLElement{
+    constructor(){
+        super(); 
+        this.shadow = this.attachShadow({mode: "open"});
+    }
+
+    refresh(data){
+        if(!data) {return}
+        this.shadow.innerHTML = ""; 
+
+        this.shadowRoot.innerHTML = `
+            <h1>Confirmation page</h1>
+            <p> Name ${data.name}</p>
+            <p> Email 
+            <p> Phone
+            <p> Product will be sent to follwing delivery adress
+            `; 
+    }
+}
 
 //================================================
 customElements.define("cat-view", CategoryView); 
 customElements.define("prod-view", ListView);
 customElements.define("detail-view", DetailView);
 customElements.define("cart-view", CartView); 
+customElements.define("checkout-view", CheckoutView); 
+customElements.define("confirmation-view", ConfirmationView); 

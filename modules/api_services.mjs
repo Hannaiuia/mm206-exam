@@ -2,7 +2,7 @@
 
 //import
 import { errorHandler} from "./error_handler.mjs"; 
-import { CategoryArrayModel, ProductArrayModel} from "./models.mjs";
+import { CategoryArrayModel, ProductArrayModel, ShippingMethodsArrayModel} from "./models.mjs";
 import { sendRequest } from "./utils.mjs";
 
 const groupkey = "YNWWOG84"; 
@@ -99,3 +99,55 @@ export async function searchProducts(search){
         return []; 
     }
 }
+
+//-----------------------------------------------------
+export async function getShippingMethods(){
+    const url = `https://sukkergris.onrender.com/logistics/shippingtypes?key=${groupkey}`; 
+
+    try {
+        const dataFromServer = await sendRequest(url); 
+
+        //convert from server-data to app model data
+        const model = new ShippingMethodsArrayModel(dataFromServer); 
+        return model.data; 
+    
+    } catch(error){
+        errorHandler(error); 
+        return []; 
+    }
+}
+
+//-----------------------------------------------------
+export async function sendOrder(order){
+    const url = `https://sukkergris.onrender.com/webshop/orders?key=${groupkey}`;
+
+    const orderData = {
+        customer_name: order.name,
+        street: order.street,
+        city: order.city,
+        zipcode: order.zipCode,
+        country: order.country,
+        email: order.email,
+        phone: order.phone,
+        shipping_id: order.shipping_id,
+        content: JSON.stringify(order.content)
+    };
+
+    const cfg = {
+        method: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify(orderData)
+    };
+
+    try {
+        const data = await sendRequest(url, cfg);
+        return data;
+
+    } catch (error) {
+        errorHandler(error);
+        return null; 
+    }
+}
+

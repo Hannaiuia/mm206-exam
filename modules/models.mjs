@@ -27,7 +27,7 @@ export class CategoryArrayModel {
 }
 
 //============================================
-export class ProductArrayModel{
+export class ProductArrayModel{ //used instead of productmodel aswell 
     //----------------------------------------
     constructor(dataFromServer){
 
@@ -44,7 +44,8 @@ export class ProductArrayModel{
             id:     dataObj.id, 
             catId:  dataObj.category_id,
             catName:dataObj.category_name,
-            name:   dataObj.chocoName, 
+            name:   dataObj.chocoName,
+            shortDescr: dataObj.shortDescr , 
             descr:  dataObj.descr, 
             price:  dataObj.price, 
             thumb:  dataObj.thumb, 
@@ -52,9 +53,28 @@ export class ProductArrayModel{
             stock:  dataObj.stock,
             sale:   dataObj.discount,
             delivery:dataObj.expected_shipped
-            //will have to add more properties if needed
         }
     }
 }
 
 //==============================================
+export class ShippingMethodsArrayModel{
+    //------------------------------------------
+    constructor(dataFromServer){
+
+        this.data = []; 
+
+        for(let dataObj of dataFromServer){
+            const obj = this.convertObj(dataObj); 
+            this.data.push(obj)
+        }
+    }
+    //----------------------------------------------
+    convertObj(dataObj){
+        return{
+            id:     dataObj.id, 
+            type:   dataObj.type, 
+            price:  dataObj.price
+        }
+    }
+}
