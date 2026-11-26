@@ -48,11 +48,13 @@ export class ProductArrayModel{ //used instead of productmodel aswell
             shortDescr: dataObj.shortDescr , 
             descr:  dataObj.descr, 
             price:  dataObj.price, 
+            rating: dataObj.rating,
             thumb:  dataObj.thumb, 
             image:  dataObj.image,
             stock:  dataObj.stock,
             sale:   dataObj.discount,
-            delivery:dataObj.expected_shipped
+            delivery:dataObj.expected_shipped, 
+            static: dataObj.static
         }
     }
 }
@@ -77,4 +79,51 @@ export class ShippingMethodsArrayModel{
             price:  dataObj.price
         }
     }
+}
+
+//================================================
+export class OrderModel{
+    //---------------------------------------------
+    constructor(order){
+        this.data = this.convertObj(order); 
+    }
+
+    //----------------------------------------------
+    convertObj(order){
+        return{
+            customer_name:  order.customerName,
+            street:         order.street,
+            city:           order.city,
+            zipcode:        order.zipcode,
+            country:        order.country,
+            email:          order.email,
+            phone:          order.phone,
+            shipping_id:    order.shippingId, 
+            content:        order.content
+        }
+    }
+}
+
+//====================================================
+export class NewUserModel{
+    //-----------------------------------------
+    constructor(newUser){
+        this.data = this.convertObj(newUser); 
+    }
+    //---------------------------------------
+    convertObj(newUser){
+        return{
+            fullname:   newUser.name,
+            street:     newUser.street,
+            city:       newUser.city,
+            zipcode:    newUser.zipcode,
+            country:    newUser.country,
+            email:      newUser.email,
+            phone:      newUser.phone, 
+            username:   newUser.username, 
+            password:   newUser.password, 
+            img_file:   newUser.picture
+        }
+    }
+
 }

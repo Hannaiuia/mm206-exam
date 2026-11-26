@@ -1,14 +1,18 @@
-import {getCategories, getAllProducts, getProductsByCategory,searchProducts, getIndividualProduct,getShippingMethods, sendOrder } from "../api_services.mjs"
+import {getCategories, getProductsByCategory,searchProducts, getIndividualProduct,getShippingMethods, sendOrder,createUser, loginUser, addComment } from "../api_services.mjs"
 //import { CategoryArrayModel } from "../models.mjs";
-import { CategoryView, ListView, DetailView, CartView, CheckoutView, ConfirmationView } from "./views/user_products_views.mjs";
+import { showMessage } from "../message_handler.mjs";
+import { calculateTotalPrice } from "../utils.mjs";
+import { CategoryView, ProdView, DetailView, CartView, CheckoutView, ConfirmationView, CreateUserView, LoginView} from "./views/user_products_views.mjs";
 
 //import data
 const catView = new CategoryView(); 
-const prodView = new ListView(); 
+const prodView = new ProdView(); 
 const detailView = new DetailView(); 
 const cartView = new CartView(); 
 const checkoutView = new CheckoutView(); 
 const confirmationView = new ConfirmationView(); 
+const createUserView = new CreateUserView();
+const loginView = new LoginView();  
 
 const viewMap = {
     "cat-view": catView, 
@@ -16,18 +20,24 @@ const viewMap = {
     "detail-view": detailView, 
     "cart-view": cartView,
     "checkout-view": checkoutView, 
-    "confirmation-view":confirmationView
+    "confirmation-view":confirmationView, 
+    "create-user-view":createUserView, 
+    "login-view": loginView
 }
 
 const viewContainer = document.getElementById("viewContainer"); 
 const btnHome = document.getElementById(`btnHome`); 
 const btnSearch = document.getElementById(`btnSearch`); 
 const btnCart = document.getElementById(`btnCart`); 
+const btnCreateUser = document.getElementById(`btnCreateUser`); 
+const btnLogin = document.getElementById(`btnLogin`); 
+const loginPicture = document.getElementById(`loginPicture`); 
 
 let myInput = document.getElementById("myInput"); 
 let wrongSearch = document.getElementById("wrongSearch"); 
 
 //show categories at startup 
+sessionStorage.removeItem("userLogin"); //removes info from checkoutView if there has been a login before 
 const categories = await getCategories(); 
 catView.refresh(categories); 
 
@@ -39,7 +49,7 @@ function navigateTo(viewName, push){
     if(push){
         history.pushState(viewName, "", "#" + viewName); //saves the navigation in the browser
     }
-
+    wrongSearch.innerHTML="";  
     viewContainer.innerHTML = ""; 
     viewContainer.appendChild(viewMap[viewName]); 
 }; 
@@ -49,9 +59,11 @@ btnSearch.addEventListener(`click`, async function(evt){
     let searchInput = myInput.value; 
     let finalInput = searchInput.toLowerCase(); 
     const products = await searchProducts(finalInput); 
-    prodView.refresh(products); 
-    navigateTo("prod-view");
-    wrongSearch.innerHTML = (""); 
+
+    prodView.refresh(products);  //problem todo!!
+    navigateTo("prod-view", true);
+
+    myInput.value = "";
 
     if(products.length == 0){
         wrongSearch.innerHTML = "Your search did not match any products"; 
@@ -59,22 +71,33 @@ btnSearch.addEventListener(`click`, async function(evt){
 }); 
 
 //------------------------------------------------------
-
 btnCart.addEventListener(`click`, function(evt){
     let cart = JSON.parse(localStorage.getItem("productsInCart")) || [];
     cartView.refresh(cart); 
     navigateTo("cart-view", true); 
-   // console.log("entering shopping cart page"); 
 })
+
 //------------------------------------------------------
 btnHome.addEventListener(`click`, function(evt){
     wrongSearch.innerHTML = (""); 
     myInput.value = (""); 
-    navigateTo("cat-view"); 
+    navigateTo("cat-view",true); 
 }); 
 
+//------------------------------------------------------
+btnCreateUser.addEventListener(`click`, function(evt){
+    createUserView.refresh(); 
+    navigateTo("create-user-view"); 
+})
+
+//------------------------------------------------------
+btnLogin.addEventListener(`click`, function(evt){
+    loginView.refresh(); 
+    navigateTo("login-view"); 
+})
+
 //----------------------------------------------
-catView.addEventListener(`categoryselect`, async function(evt){
+catView.addEventListener(`categorySelectClick`, async function(evt){
     const categoryId = evt.categoryData.id; 
     const products = await getProductsByCategory(categoryId); 
     prodView.refresh(products); 
@@ -82,21 +105,19 @@ catView.addEventListener(`categoryselect`, async function(evt){
 }); 
 
 //----------------------------------------------
-prodView.addEventListener(`productclick`, async function(evt){
+prodView.addEventListener(`productClick`, async function(evt){
     const productsId = evt.productData.id; 
     const product = await getIndividualProduct(productsId); 
-    detailView.refresh(product[0]); 
+
+    let userInfo = JSON.parse(sessionStorage.getItem("userLogin")) || null; 
+    detailView.refresh(product[0], userInfo); 
     navigateTo("detail-view", true); 
 });
 
 //-----------------------------------------------------
-
 detailView.addEventListener(`buyProdClick`, function(evt){
-    //console.log("Product received:", evt.productData);
     const productData = evt.productData; 
     let cart = JSON.parse(localStorage.getItem("productsInCart")) || []; 
-
-    //console.log("Cart before adding:", cart);
 
     const excistingItem = cart.find(item => item.product.id === productData.id); 
 
@@ -114,18 +135,35 @@ detailView.addEventListener(`buyProdClick`, function(evt){
     console.log(localStorage.getItem("productsInCart")); 
 }); 
 
+//-------------------------------------------------------------
+detailView.addEventListener(`submitReviewClick`, async function(evt){
+    const newReview = evt.productData; 
+    const response = await addComment(newReview)
+
+   /* if(!response){
+        showMessage("YOUR REVIEW COULD NOT BE SAVED ")
+        return; 
+    }*/
+
+    const product = await getIndividualProduct(newReview.product_id); 
+    let userInfo = JSON.parse(sessionStorage.getItem("userLogin")); 
+    detailView.refresh(product[0], userInfo); 
+}); 
+
 //------------------------------------------------------------
 cartView.addEventListener(`checkoutClick`, async function(evt){
     let cart =  JSON.parse(localStorage.getItem("productsInCart")) || []; 
     
     if (cart.length === 0){
-        console.log("A product has to be added for checkout"); 
+        showMessage("A product has to be added for checkout"); 
     }else{
-        const shippingMethods =  await getShippingMethods();
-        const cartTotal = cartView.calculateTotalPrice(cart); 
+        const shippingMethod =  await getShippingMethods();
+        const cartTotal = calculateTotalPrice(cart); 
 
-        checkoutView.refresh(shippingMethods, cartTotal); 
+        let userInfo = JSON.parse(sessionStorage.getItem("userLogin")) || null; 
+        checkoutView.refresh(shippingMethod, cartTotal, userInfo); 
         navigateTo("checkout-view", true); 
+        
     }
 }); 
 
@@ -138,17 +176,16 @@ cartView.addEventListener(`deleteProdClick`, function(evt){
 
     localStorage.setItem(`productsInCart`, JSON.stringify(deleteProd)); 
     cartView.refresh(deleteProd); 
-})
+});
 
 //---------------------------------------------------------
 cartView.addEventListener(`emptyCartClick`, function(evt){
     localStorage.removeItem(`productsInCart`); 
     cartView.refresh([]); 
-})
+}); 
 
 //---------------------------------------------------------
 cartView.addEventListener(`minusQuantityClick`, function(evt){
-    //console.log("Minus event received!");
     const productData = evt.productData; 
     let cart = JSON.parse(localStorage.getItem("productsInCart")) || []; 
 
@@ -160,7 +197,7 @@ cartView.addEventListener(`minusQuantityClick`, function(evt){
 
     localStorage.setItem(`productsInCart`, JSON.stringify(cart)); 
     cartView.refresh(cart); 
-})
+});
 
 //---------------------------------------------------------
 cartView.addEventListener(`plusQuantityClick`, function(evt){
@@ -173,26 +210,48 @@ cartView.addEventListener(`plusQuantityClick`, function(evt){
 
     localStorage.setItem(`productsInCart`, JSON.stringify(cart)); 
     cartView.refresh(cart); 
-})
+});
 
 //-----------------------------------------------------------
 checkoutView.addEventListener("placeOrderClick", async function(evt){
-    const order = evt.productData; 
-    const response = await sendOrder(order); 
+    const order = evt.productData;
+    const shippingMethod = evt.shippingMethod; 
+    const totalWithShipping = evt.totalWithShipping;
+    const response = await sendOrder(order);
 
-    console.log(response); 
-    confirmationView.refresh(response, order);  
+    if(!response){return}; 
+   // console.log(response); 
+
+    localStorage.removeItem("productsInCart"); 
+    confirmationView.refresh(order, response, shippingMethod, totalWithShipping);  
     navigateTo("confirmation-view", true)
 }); 
 
-//------------------------------------------
-prodView.addEventListener(`backclick`, function(){
-    history.back()
+//-----------------------------------------------------------------
+createUserView.addEventListener("makeUserClick", async function (evt){
+    //console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",evt.productData)
+    const newUser = evt.productData; 
+    
+    const response = await createUser(newUser); 
+
+    loginView.refresh(newUser, response); 
+    navigateTo("login-view", true)
 }); 
 
-//--------------------------------------------------
-detailView.addEventListener(`backclick`, function(){
-    history.back()
+//----------------------------------------------------------------------
+loginView.addEventListener("loginUserClick", async function (evt){
+    const user = evt.productData; 
+    const response = await loginUser(user); 
+
+    if(!response){
+        showMessage("Login failed! Check your username and password"); 
+        return; 
+    }
+
+    sessionStorage.setItem("userLogin", JSON.stringify(response)); 
+
+    loginPicture.src = response.thumb; 
+    navigateTo("cat-view", true); 
 }); 
 
 //--------------------------------------------------
