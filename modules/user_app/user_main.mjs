@@ -242,6 +242,7 @@ createUserView.addEventListener("makeUserClick", async function (evt){
 loginView.addEventListener("loginUserClick", async function (evt){
     const user = evt.productData; 
     const response = await loginUser(user); 
+    console.log("LOGIN RESPONSE:", response)
 
     if(!response){
         showMessage("Login failed! Check your username and password"); 
@@ -250,7 +251,8 @@ loginView.addEventListener("loginUserClick", async function (evt){
 
     sessionStorage.setItem("userLogin", JSON.stringify(response)); 
 
-    loginPicture.src = response.thumb; 
+    loginPicture.src = `https://sukkergris.onrender.com/images/YNWWOG84/users/${response.logindata.thumb}`
+
     navigateTo("cat-view", true); 
 }); 
 

@@ -572,13 +572,13 @@ export class CreateUserView extends HTMLElement{
             let zipcode = this.shadow.querySelector("#customerZip").value; 
             let country = this.shadow.querySelector("#customerCountry").value; 
 
-            let img_file = this.shadow.querySelector("#customerPicture").files[0]; 
+            let picture = this.shadow.querySelector("#customerPicture").files[0]; 
             let username = this.shadow.querySelector("#customerUserName").value; 
             let password = this.shadow.querySelector("#customerPassword").value; 
 
-            if(!this.checkImage(img_file)){return;}
+            if(!this.checkImage(picture)){return;}
             
-            let newUser = {fullname, phone, city, street, zipcode, country,img_file, username, password}; 
+            let newUser = {fullname, phone, city, street, zipcode, country,picture, username, password}; 
 
             console.log("A user has been added", newUser); 
         
@@ -591,10 +591,10 @@ export class CreateUserView extends HTMLElement{
             });
     }
     //--------------------------------------------------------------------------------
-    checkImage(img_file){
-        if(!img_file){
+    checkImage(picture){
+        if(!picture){
             return true; 
-        } else if(img_file.type !=="image/png" && img_file.type !== "image/jpeg" || img_file.size > 1024 * 1024){
+        } else if(picture.type !=="image/png" && picture.type !== "image/jpeg" || picture.size > 1024 * 1024){
             showMessage("Please select a PNG or JPG, or a smaller image than 1MB")
             return false; 
         }else{
