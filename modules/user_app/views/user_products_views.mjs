@@ -26,7 +26,7 @@ export class CategoryView extends HTMLElement{
             div.addEventListener(`click`, evt => {
                 const catEvt = new CustomEvent("categorySelectClick", {composed: true, bubbles:true }); 
                 catEvt.categoryData = value; 
-                this.shadow.dispatchEvent(catEvt); 
+                this.dispatchEvent(catEvt); 
             }); 
         }
     }
@@ -38,7 +38,7 @@ export class ProdView extends HTMLElement{
         super(); 
         this.shadow = this.attachShadow({mode: "open"});
     }
-
+    //------------------------------------------------------
     refresh(data){
         if(!data) {return} //if an error is catched in api_services
 
@@ -54,14 +54,14 @@ export class ProdView extends HTMLElement{
                 <h2>${value.name}</h2> 
                 <img src = "https://sukkergris.onrender.com/images/${imageKey}/small/${value.thumb}">
                 <p> ${value.shortDescr} </p>
-                <p> ${value.price},- kr</p><hr>
+                <p> ${value.price} kr</p><hr>
             `;
             this.shadow.appendChild(div); 
 
             div.addEventListener(`click`, evt => {
                 const productsEvt = new CustomEvent("productClick", {composed: true, bubbles:true }); 
                 productsEvt.productData = value; 
-                this.shadow.dispatchEvent(productsEvt); 
+                this.dispatchEvent(productsEvt); 
             }); 
         }
     }
@@ -73,7 +73,7 @@ export class DetailView extends HTMLElement{
         super(); 
         this.shadow = this.attachShadow({mode: "open"}); 
     }
-
+    //------------------------------------------------------
     refresh(data, userInfo){
         if(!data) {return}
         this.shadow.innerHTML = ""; 
@@ -102,7 +102,6 @@ export class DetailView extends HTMLElement{
             const buyProduct = new CustomEvent("buyProdClick", {composed: true, bubbles: true})
             buyProduct.productData = data;
             this.dispatchEvent(buyProduct); 
-            console.log("added product"); 
         })
 
         if(userInfo !== null ){
@@ -111,7 +110,7 @@ export class DetailView extends HTMLElement{
                 <hr>
                 <h2>Give a review!</h2>
                 <label for="customerRating"> Rate product: </label>
-                <select id="customerRating">
+                <select id="customerRating" required>
                     <option value="">Choose a rating for the product</option>
                     <option value="1"> 1 star </option>
                     <option value="2"> 2 stars </option>
@@ -132,12 +131,12 @@ export class DetailView extends HTMLElement{
         }
     }
 
-    //--------------////-------------------------------------
+    //---------------------------------------------------
     formatPrice(data){
         if (data.sale > 0){
-            return `<span class="oldPrice"> Original price:  ${data.price} ,-kr </span><br> New price: ${priceForProduct(data)} ,-kr`; 
+            return `<span class="oldPrice"> Original price:  ${data.price} kr </span><br> New price: ${priceForProduct(data)} kr`; 
         }else{
-            return "Price: " + priceForProduct(data) +  ",-kr"; 
+            return "Price: " + priceForProduct(data) +  " kr "; 
         }}
 
     //-----------------------------------------------------------
@@ -151,10 +150,12 @@ export class DetailView extends HTMLElement{
     //------------------------------------------------------------
     formatRating(data){
         if(data.rating == null){
-            return "Note! The item has not been rated yet! "; 
+            return "The item has not been rated yet! "; 
         }else{
             return `Rating: ${Number(data.rating).toFixed(1)}`; 
-        }}
+        }  
+    }
+
     //-----------------------------------------------------------------
     submitReview(reviewForm, data){
         reviewForm.addEventListener("submit", evt =>{
@@ -166,71 +167,69 @@ export class DetailView extends HTMLElement{
             let reviewData = {product_id: data.id, rating: Number(rating), comment_text: comment}
         
             const review = new CustomEvent("submitReviewClick", {composed: true, bubbles: true});
-            review.productData = reviewData; 
+            review.reviewData = reviewData; 
 
             this.dispatchEvent(review); 
-            console.log("a review has been submitted")
             });
     }
 }
 
 //===========================================================
 export class CartView extends HTMLElement{
+    //------------------------------------------------------
     constructor(){
         super(); 
         this.shadow = this.attachShadow({mode: "open"});
     }
-
+    //------------------------------------------------------
     refresh(data){
         if(!data) {return}
         this.shadow.innerHTML = ""; 
 
         this.shadow.innerHTML = `
             <h1>Shopping Cart</h1>
-            `; 
+        `; 
         
         const checkOutBtn = this.checkoutButton(data); 
         const emptyCartBtn = this.emptyCart(data);  
 
         for(let value of data) {
-        const product = value.product; 
-        const div = document.createElement("div"); 
+            const product = value.product; 
+            const div = document.createElement("div"); 
 
-        const deleteProdBtn = this.deleteButton(product);
-        const plusQuantityBtn = this.incQuantityButton(product); 
-        const minQuantityBtn = this.decQuantityButton(product); 
-        
+            const deleteProdBtn = this.deleteButton(product);
+            const plusQuantityBtn = this.incQuantityButton(product); 
+            const minQuantityBtn = this.decQuantityButton(product); 
+            
 
-        div.innerHTML = `
-            <hr>
-            <h2>${product.name}</h2>
-            <p> Product number ${product.id} </p>
-            <h3> Pris kr ${priceForProduct(product)}</h3>
-            <p> Quantity: <span class="quantity"><span class="number"></span></span> </p>
-            <p> Total price per product ${priceForProduct(product) * value.quantity} kr </p>
-            <h3> ${formatStock(product,value.quantity)} </h3>
+            div.innerHTML = `
+                <hr>
+                <h2>${product.name}</h2>
+                <p> Product number ${product.id} </p>
+                <h3> Pris ${priceForProduct(product)} kr </h3>
+                <p> Quantity: <span class="quantity"><span class="number"></span></span> </p>
+                <p> Total price per product ${priceForProduct(product) * value.quantity} kr </p>
+                <h3> ${formatStock(product,value.quantity)} </h3>
             `; 
             this.shadow.appendChild(div);
 
-        const quantitySpan = div.querySelector(`.quantity`); 
-        
-        const numberSpan = div.querySelector(`.number`); 
-        numberSpan.textContent = value.quantity; 
-        
-        quantitySpan.appendChild(minQuantityBtn); 
-        quantitySpan.appendChild(numberSpan); 
-        quantitySpan.appendChild(plusQuantityBtn); 
-        
-        this.shadow.appendChild(deleteProdBtn); 
-
+            const quantitySpan = div.querySelector(`.quantity`); 
+            const numberSpan = div.querySelector(`.number`); 
+            numberSpan.textContent = value.quantity; 
+            
+            quantitySpan.appendChild(minQuantityBtn); 
+            quantitySpan.appendChild(numberSpan); 
+            quantitySpan.appendChild(plusQuantityBtn); 
+            
+            this.shadow.appendChild(deleteProdBtn); 
         }
 
         const h2 = document.createElement("h2"); 
         h2.innerHTML = `
             <hr>
-            Total price: ${calculateTotalPrice(data)}
-            `; 
-            this.shadow.appendChild(h2); 
+            Total price: ${calculateTotalPrice(data)} kr
+        `; 
+        this.shadow.appendChild(h2); 
 
         this.shadow.appendChild(emptyCartBtn); 
         this.shadow.appendChild(checkOutBtn); 
@@ -238,14 +237,12 @@ export class CartView extends HTMLElement{
     } 
 
     //-----------------------------------------------------------
-    checkoutButton(shoppingCart){
+    checkoutButton(){
         const checkOutBtn = document.createElement("button"); 
         checkOutBtn.innerText = "Checkout"; 
 
         checkOutBtn.addEventListener(`click`, evt =>{
             const checkOut = new CustomEvent("checkoutClick", {composed: true, bubbles: true})
-            checkOut.productData = shoppingCart; 
-            console.log("checking out"); 
 
             this.dispatchEvent(checkOut); 
         }); 
@@ -254,14 +251,12 @@ export class CartView extends HTMLElement{
     }
 
     //---------------------------------------------------------------------
-    emptyCart(shoppingCart){
+    emptyCart(){
         const emptyCartBtn = document.createElement("button"); 
         emptyCartBtn.innerText = "Empty cart"; 
 
         emptyCartBtn.addEventListener(`click`, evt =>{
             const emptyCart = new CustomEvent("emptyCartClick", {composed: true, bubbles: true})
-            emptyCart.productData = shoppingCart; 
-            console.log("emptied the shopping cart"); 
 
             this.dispatchEvent(emptyCart); 
         }); 
@@ -277,7 +272,6 @@ export class CartView extends HTMLElement{
         deleteProdBtn.addEventListener(`click`, evt =>{
             const deleteProd = new CustomEvent("deleteProdClick", {composed: true, bubbles: true})
             deleteProd.productData = product;
-            console.log("deleted product from cart"); 
 
             this.dispatchEvent(deleteProd); 
         }); 
@@ -292,7 +286,6 @@ export class CartView extends HTMLElement{
         plusQuantityBtn.addEventListener(`click`, evt => {
             const plusQuantity = new CustomEvent("plusQuantityClick", {composed:true, bubbles:true})
             plusQuantity.productData = product;  
-            console.log("plus in quantity on product");
 
             this.dispatchEvent(plusQuantity);
         })
@@ -309,7 +302,6 @@ export class CartView extends HTMLElement{
         minQuantityBtn.addEventListener(`click`, evt =>{
             const minQuantity = new CustomEvent("minusQuantityClick", {composed:true, bubbles:true})
             minQuantity.productData = product; 
-            console.log("minus in cuantity on product"); 
 
             this.dispatchEvent(minQuantity); 
         })
@@ -317,21 +309,24 @@ export class CartView extends HTMLElement{
         return minQuantityBtn; 
     }
 }
+
 //==========================================================
 export class CheckoutView extends HTMLElement{
+    //------------------------------------------------------
     constructor(){
         super(); 
         this.shadow = this.attachShadow({mode: "open"});
     }
 
+    //------------------------------------------------------
     refresh(data, cartTotal, userInfo){
-    if(!data) {return}
-    this.shadow.innerHTML = ""; 
+        if(!data){return}
+        this.shadow.innerHTML = ""; 
     
-    const form = document.createElement("form"); 
+        const form = document.createElement("form"); 
     
-    form.innerHTML = `
-        <h1>CheckOut Page</h1>
+        form.innerHTML = `
+            <h1>CheckOut Page</h1>
 
             <label for="customerName">Full name: </label>
             <input type="text" id="customerName" required><br>
@@ -362,12 +357,14 @@ export class CheckoutView extends HTMLElement{
             <h2 id="orderTotal"></h2>
 
             <input type="submit" value="Place order" ;>
-            `;
+        `;
+
         this.placeOrderButton(form);
         this.shadow.appendChild(form); 
 
         if(userInfo){
-        const loginData = userInfo.logindata; 
+            const loginData = userInfo.logindata; 
+            
             this.shadow.querySelector("#customerName").value = loginData.full_name; 
             this.shadow.querySelector("#customerEmail").value = loginData.username; 
             this.shadow.querySelector("#customerStreet").value = loginData.street; 
@@ -386,11 +383,9 @@ export class CheckoutView extends HTMLElement{
             option.innerText = `${value.type} - ${value.price} kr`;
 
             shippingTypes.appendChild(option)
-       
         } 
         
-        this.calculateTotalWithShipping(shippingTypes, cartTotal, data, orderTotal)
-       
+        this.calculateTotalWithShipping(shippingTypes, cartTotal, data, orderTotal)  
     } 
 
     //----------------------------------------------------------------------------- 
@@ -398,30 +393,27 @@ export class CheckoutView extends HTMLElement{
         form.addEventListener("submit", evt =>{
             evt.preventDefault();
 
-            let shippingId = this.shadow.querySelector("#shippingTypes").value; 
-            let shippingMethod = this.shadow.querySelector("#shippingTypes").selectedOptions[0].text;
-            let customerName = this.shadow.querySelector("#customerName").value; 
-            let phone = this.shadow.querySelector("#customerPhone").value; 
-            let email = this.shadow.querySelector("#customerEmail").value; 
+            const shippingId = this.shadow.querySelector("#shippingTypes").value; 
+            const shippingMethod = this.shadow.querySelector("#shippingTypes").selectedOptions[0].text;
+            const customerName = this.shadow.querySelector("#customerName").value; 
+            const phone = this.shadow.querySelector("#customerPhone").value; 
+            const email = this.shadow.querySelector("#customerEmail").value; 
 
-            let street = this.shadow.querySelector("#customerStreet").value; 
-            let city  = this.shadow.querySelector("#customerCity").value; 
-            let zipcode = this.shadow.querySelector("#customerZip").value; 
-            let country = this.shadow.querySelector("#customerCountry").value; 
+            const street = this.shadow.querySelector("#customerStreet").value; 
+            const city  = this.shadow.querySelector("#customerCity").value; 
+            const zipcode = this.shadow.querySelector("#customerZip").value; 
+            const country = this.shadow.querySelector("#customerCountry").value; 
 
-            let content = JSON.parse(localStorage.getItem("productsInCart"));
+            const content = JSON.parse(localStorage.getItem("productsInCart"));
 
-            let order = {shippingId, customerName, email, phone , city, street, zipcode, country, content}
-
-            console.log("My order", order); 
+            const order = {shippingId, customerName, email, phone , city, street, zipcode, country, content}; 
 
             const placeOrder = new CustomEvent("placeOrderClick", {composed: true, bubbles: true});
-            placeOrder.productData = order; 
+            placeOrder.orderData = order; 
             placeOrder.shippingMethod = shippingMethod;
             placeOrder.totalWithShipping = this.shadow.querySelector("#orderTotal").totalWithShipping;
 
             this.dispatchEvent(placeOrder);
-            console.log("your order has been placed");
         });
     }  
 
@@ -429,22 +421,23 @@ export class CheckoutView extends HTMLElement{
     calculateTotalWithShipping(shippingTypes, cartTotal, data, orderTotal){
         shippingTypes.addEventListener("change", evt => {
 
-        let selectedIndex = shippingTypes.selectedIndex;
-        let shippingPrice = data[selectedIndex - 1].price;
+            let selectedIndex = shippingTypes.selectedIndex;
+            let shippingPrice = data[selectedIndex-1].price;
 
-        let totalWithShipping = cartTotal + Number(shippingPrice); 
-        orderTotal.textContent = `Total Price with shipping ${totalWithShipping}  kr`; 
-        orderTotal.totalWithShipping = totalWithShipping; 
+            let totalWithShipping = cartTotal + Number(shippingPrice); 
+            orderTotal.textContent = `Total Price with shipping ${totalWithShipping} kr`; 
+            orderTotal.totalWithShipping = totalWithShipping; 
         }); 
     }    
 } 
 //=====================================================
 export class ConfirmationView extends HTMLElement{
+    //------------------------------------------------------
     constructor(){
         super(); 
         this.shadow = this.attachShadow({mode: "open"});
     }
-
+    //------------------------------------------------------
     refresh(order, response, shippingMethod, totalWithShipping){
         if(!order) {return}
         this.shadow.innerHTML = ""; 
@@ -461,22 +454,20 @@ export class ConfirmationView extends HTMLElement{
             `; 
 
         for(let product of order.content){
+
             let productData = product.product; 
             let productPrice = priceForProduct(productData);
-            let unitPrice = productPrice * product.quantity;
-            let delivery = new Date(productData.delivery).toLocaleDateString("nb-NO"); 
+            let pricePerProduct = productPrice * product.quantity;
         
             const div = document.createElement("div"); 
 
             div.innerHTML = `
-            <hr>
-            <h2> Name: ${productData.name}</h2>
-            <p> Product number: ${productData.id}</p>
-            <p> Price per product  ${productPrice} kr </p>
-            <p> Quantity of product ${product.quantity} </p>
-            <p> Total price ${unitPrice} kr </p>
-            <p> Product will be delivered ${delivery}</p>
-            
+                <hr>
+                <h3> ${productData.name}</h3>
+                <p> Product number: ${productData.id}</p>
+                <p> Price per product  ${productPrice} kr </p>
+                <p> Quantity of product ${product.quantity} </p>
+                <p> Total price ${pricePerProduct} kr </p>
             `; 
 
             this.shadow.appendChild(div);   
@@ -485,12 +476,14 @@ export class ConfirmationView extends HTMLElement{
         const shippingSummary = document.createElement("div"); 
         shippingSummary.innerHTML = `
             <hr>
-            <h3> You selected:"${shippingMethod}" type of shipping </h3>
+            <h2> You selected:"${shippingMethod}" type of shipping </h2>
             <p> Your total with shipping is: ${totalWithShipping} kr </p>
-            <p> Your product will be sent  ${this.calculateShippingDate(order)};  
-            `; 
+            <p> Your product will be sent  ${this.calculateShippingDate(order)}</p> 
+        `; 
+
         this.shadow.appendChild(shippingSummary); 
     }
+
     //---------------------------------------------------------------------
        calculateShippingDate(order){
         let shippingDate = new Date(); 
@@ -510,11 +503,12 @@ export class ConfirmationView extends HTMLElement{
 
 //==========================================================================
 export class CreateUserView extends HTMLElement{
+    //------------------------------------------------------
     constructor(){
         super(); 
         this.shadow = this.attachShadow({mode: "open"});
     }
-
+    //------------------------------------------------------
     refresh(){
         this.shadow.innerHTML = ""; 
 
@@ -552,11 +546,10 @@ export class CreateUserView extends HTMLElement{
             <input type="password" id="customerPassword" required><br>
 
             <input type="submit" value="Create your user">
-            
-            `; 
-            this.shadow.appendChild(form);
-            this.createUserButton(form); 
+        `; 
 
+        this.shadow.appendChild(form);
+        this.createUserButton(form); 
     }
 
     //-------------------------------------------------------------------------
@@ -564,37 +557,33 @@ export class CreateUserView extends HTMLElement{
         form.addEventListener("submit", evt =>{
             evt.preventDefault();
 
-            let fullname = this.shadow.querySelector("#customerName").value; 
-            let phone = this.shadow.querySelector("#customerPhone").value; 
+            const fullname = this.shadow.querySelector("#customerName").value; 
+            const phone = this.shadow.querySelector("#customerPhone").value; 
 
-            let street = this.shadow.querySelector("#customerStreet").value; 
-            let city  = this.shadow.querySelector("#customerCity").value; 
-            let zipcode = this.shadow.querySelector("#customerZip").value; 
-            let country = this.shadow.querySelector("#customerCountry").value; 
+            const street = this.shadow.querySelector("#customerStreet").value; 
+            const city  = this.shadow.querySelector("#customerCity").value; 
+            const zipcode = this.shadow.querySelector("#customerZip").value; 
+            const country = this.shadow.querySelector("#customerCountry").value; 
 
-            let img_file = this.shadow.querySelector("#customerPicture").files[0]; 
-            let username = this.shadow.querySelector("#customerUserName").value; 
-            let password = this.shadow.querySelector("#customerPassword").value; 
+            const picture = this.shadow.querySelector("#customerPicture").files[0]; 
+            const username = this.shadow.querySelector("#customerUserName").value; 
+            const password = this.shadow.querySelector("#customerPassword").value; 
 
-            if(!this.checkImage(img_file)){return;}
+            if(!this.checkImage(picture)){return;}
             
-            let newUser = {fullname, phone, city, street, zipcode, country,img_file, username, password}; 
-
-            console.log("A user has been added", newUser); 
+            const newUser = {fullname, phone, city, street, zipcode, country,picture, username, password}; 
         
             const makeUser = new CustomEvent("makeUserClick", {composed: true, bubbles: true});
-            makeUser.productData = newUser; 
+            makeUser.userData = newUser; 
 
-            console.log("Sending:", JSON.stringify(newUser));
             this.dispatchEvent(makeUser); 
-            console.log("a user has been added?")
-            });
+        });
     }
     //--------------------------------------------------------------------------------
-    checkImage(img_file){
-        if(!img_file){
+    checkImage(picture){
+        if(!picture){
             return true; 
-        } else if(img_file.type !=="image/png" && img_file.type !== "image/jpeg" || img_file.size > 1024 * 1024){
+        } else if(picture.type !=="image/png" && picture.type !== "image/jpeg" || picture.size > 1024 * 1024){
             showMessage("Please select a PNG or JPG, or a smaller image than 1MB")
             return false; 
         }else{
@@ -605,15 +594,15 @@ export class CreateUserView extends HTMLElement{
 
 //===============================================================================
 export class LoginView extends HTMLElement{
+    //------------------------------------------------------
     constructor(){
         super(); 
         this.shadow = this.attachShadow({mode: "open"});
-
     }
+    //------------------------------------------------------
     refresh(){
         this.shadow.innerHTML = ""; 
-    
-        
+
         const form = document.createElement("form"); 
     
         form.innerHTML = `
@@ -627,9 +616,9 @@ export class LoginView extends HTMLElement{
 
             <input type="submit" value="Login here">
             
-            `; 
-            this.shadow.appendChild(form); 
-            this.loginButton(form); 
+        `; 
+        this.shadow.appendChild(form); 
+        this.loginButton(form); 
     }
     //--------------------------------------------------------
     loginButton(form){
@@ -641,13 +630,12 @@ export class LoginView extends HTMLElement{
             let user = {username, password}; 
         
             const loginUser = new CustomEvent("loginUserClick", {composed: true, bubbles: true});
-            loginUser.productData = user; 
+            loginUser.loginData = user; 
 
             this.dispatchEvent(loginUser); 
         })
     }
 }
-
 
 //================================================
 customElements.define("cat-view", CategoryView); 

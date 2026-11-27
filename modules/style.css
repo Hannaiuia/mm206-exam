@@ -2,18 +2,13 @@
     display: flex;
     align-items: center;
     width: 100%;
+    flex-wrap: wrap;
+    gap: 5px; 
 }
 
-.navigation {
-    display:flex;
-    align-items: center; 
-    gap:10px
-  
-}
-
-.userButtons {
-    display:flex;
-    margin-left: auto;
+#loginPicture {
+    width: 30px;
+    height: 30px;
 }
 
 #sale{

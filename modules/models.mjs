@@ -1,8 +1,3 @@
-/* this module contains the data structures (model-classes) used in the
-application and functionality for converting incoming data from the server (there
-is no requirement to convert outgoing data to the server). It is possible to divide
-these into separate module files. If so, these should be in a separate folder
-named models.*/
 
 //=========================================
 export class CategoryArrayModel {
@@ -99,31 +94,7 @@ export class OrderModel{
             email:          order.email,
             phone:          order.phone,
             shipping_id:    order.shippingId, 
-            content:        order.content
+            content:        JSON.stringify(order.content)
         }
     }
-}
-
-//====================================================
-export class NewUserModel{
-    //-----------------------------------------
-    constructor(newUser){
-        this.data = this.convertObj(newUser); 
-    }
-    //---------------------------------------
-    convertObj(newUser){
-        return{
-            fullname:   newUser.name,
-            street:     newUser.street,
-            city:       newUser.city,
-            zipcode:    newUser.zipcode,
-            country:    newUser.country,
-            email:      newUser.email,
-            phone:      newUser.phone, 
-            username:   newUser.username, 
-            password:   newUser.password, 
-            img_file:   newUser.picture
-        }
-    }
-
 }
