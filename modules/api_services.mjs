@@ -14,11 +14,8 @@ export async function getCategories(){
     try {
         const dataFromServer = await sendRequest(url); 
 
-        console.log("Raw category data:", dataFromServer);
-
         //convert from server-data to app model-data
         const model = new CategoryArrayModel(dataFromServer); 
-        console.log("Converted categories:", model.data);
         return model.data; 
 
     } catch (error){
@@ -52,8 +49,6 @@ export async function getProductsByCategory(catId) {
     try {
 
         const dataFromServer = await sendRequest(url); 
-        
-        //console.log("Raw product data:", dataFromServer);
 
         // convert from server-data to app model - data
         const model = new ProductArrayModel(dataFromServer); 
@@ -149,8 +144,7 @@ export async function createUser(newUser){
         if(newUser[label] !== undefined && newUser[label] !== ""){
             formData.append(label, newUser[label]);
         }
-    }
-
+    } 
     const cfg = {
         method: "POST",
         body: formData
@@ -158,6 +152,7 @@ export async function createUser(newUser){
 
     try {
         const data = await sendRequest(url, cfg);
+        //const model = new NewUserModel(data); 
         return data;
 
     } catch (error) {

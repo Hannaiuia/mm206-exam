@@ -1,4 +1,3 @@
-//this module contains general “helper” functions that can be used throughout the application
 
 //-------fetch wrapper function -----------------
 
@@ -30,7 +29,8 @@ export function priceForProduct(data){
         return newPrice; 
     }else{
         return data.price; 
-    }}
+    }
+}
     
 //-------------------------------------------------------------------
 export function calculateTotalPrice(shoppingCart){

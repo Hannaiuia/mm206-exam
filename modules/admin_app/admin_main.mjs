@@ -31,7 +31,6 @@ const viewMap = {
 //------------------------------------------------
 
 function navigateTo(viewName, push){
-    //push se excerise 3
     if(push){
         history.pushState(viewName, "", "#" + viewName);
     }
@@ -46,7 +45,7 @@ function navigateTo(viewName, push){
 function createBasicAuthString(username, password) {
 let combinedStr = username + ":" + password;
 let b64Str = btoa(combinedStr);
-return "basic " + b64Str; //return the basic authentication string
+return "basic " + b64Str; 
 }
 
 //------------------------------------------------

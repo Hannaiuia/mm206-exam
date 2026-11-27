@@ -42,7 +42,7 @@ export class AdminOrdersView extends HTMLElement {
             div.innerHTML = `
                 <hr>
                 <h2>Order #${value.id}</h2>
-                <p>Customer: ${value.customer_name}</p>
+                <p>Customer: ${value.customer_name}</p> 
                 <p>Email: ${value.email}</p>
                 <p>Address: ${value.street}</p>
                 <p>City: ${value.city}</p>

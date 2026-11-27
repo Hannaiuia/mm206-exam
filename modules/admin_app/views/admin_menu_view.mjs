@@ -17,7 +17,7 @@ export class AdminMenuView extends HTMLElement {
 
     refresh(){
 
-         this.shadow.innerHTML = "";
+        this.shadow.innerHTML = "";
 
         //-----------------------------
 

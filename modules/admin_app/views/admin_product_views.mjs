@@ -11,8 +11,6 @@ export class CategoryView extends HTMLElement {
     //-----------------------------
 
     refresh(data) { 
-        
-        
 
         if (!data) {return} //if an error is catched in api_service               
 
